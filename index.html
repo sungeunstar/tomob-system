@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>tomob AI 팀 시스템 v6</title>
+<style>
+  @import url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-Regular.woff2');
+
+  :root {
+    --bg: #0f0f0f;
+    --bg2: #1a1a1a;
+    --bg3: #242424;
+    --border: rgba(255,255,255,0.08);
+    --text: #e8e8e8;
+    --muted: #888;
+    --opus: #f59e0b;
+    --sonnet: #60a5fa;
+    --haiku: #34d399;
+    --accent: #7c3aed;
+    --red: #f87171;
+    --green: #4ade80;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Suit', 'Noto Sans KR', sans-serif;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 24px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+  .header h1 span { color: var(--accent); }
+  .header-meta { display: flex; gap: 16px; align-items: center; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .badge-opus  { background: rgba(245,158,11,0.15); color: var(--opus); border: 1px solid rgba(245,158,11,0.3); }
+  .badge-sonnet{ background: rgba(96,165,250,0.15); color: var(--sonnet); border: 1px solid rgba(96,165,250,0.3); }
+  .badge-haiku { background: rgba(52,211,153,0.15); color: var(--haiku); border: 1px solid rgba(52,211,153,0.3); }
+  .badge-v6    { background: rgba(124,58,237,0.15); color: #a78bfa; border: 1px solid rgba(124,58,237,0.3); }
+
+  /* NAV */
+  .nav {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 40px;
+    display: flex; gap: 0;
+  }
+  .nav a {
+    color: var(--muted); text-decoration: none;
+    padding: 12px 16px; font-size: 12px; font-weight: 500;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .nav a:hover { color: var(--text); border-color: var(--accent); }
+
+  /* LAYOUT */
+  .page { max-width: 1400px; margin: 0 auto; padding: 32px 40px; }
+
+  section { margin-bottom: 48px; }
+  section > h2 {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 16px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* PIPELINE */
+  .pipeline {
+    display: flex; align-items: center; gap: 0;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 20px 24px; overflow-x: auto;
+  }
+  .pipe-step {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 4px; min-width: 90px; text-align: center;
+  }
+  .pipe-step .icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: var(--bg3); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .pipe-step .label { font-size: 11px; font-weight: 600; color: var(--text); }
+  .pipe-step .sub { font-size: 10px; color: var(--muted); }
+  .pipe-arrow { color: var(--muted); margin: 0 8px; font-size: 16px; flex-shrink: 0; }
+  .pipe-step.tunnel .icon { background: rgba(124,58,237,0.2); border-color: rgba(124,58,237,0.4); }
+
+  /* TEAMS GRID */
+  .teams-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .team-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden;
+  }
+  .team-header {
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .team-header .team-icon { font-size: 16px; }
+  .team-header .team-name { font-size: 13px; font-weight: 700; }
+  .team-header .team-sub { font-size: 10px; color: var(--muted); margin-left: auto; }
+
+  .member-list { padding: 8px 0; }
+  .member {
+    display: grid; grid-template-columns: 1fr auto;
+    align-items: center; gap: 8px;
+    padding: 7px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .member:last-child { border-bottom: none; }
+  .member-info .name { font-size: 12px; font-weight: 600; }
+  .member-info .role { font-size: 10px; color: var(--muted); }
+
+  /* TUNNEL CARD */
+  .tunnel-card {
+    background: var(--bg2); border: 1px solid rgba(124,58,237,0.4);
+    border-radius: 10px; padding: 20px 24px;
+    display: grid; grid-template-columns: auto 1fr auto;
+    gap: 20px; align-items: start;
+    margin-bottom: 16px;
+  }
+  .tunnel-icon {
+    width: 48px; height: 48px; background: rgba(124,58,237,0.2);
+    border: 1px solid rgba(124,58,237,0.4); border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; font-size: 22px;
+  }
+  .tunnel-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .tunnel-desc { font-size: 11px; color: var(--muted); }
+  .tunnel-checks { display: flex; flex-direction: column; gap: 6px; }
+  .check-group { font-size: 10px; }
+  .check-group .group-title { font-weight: 700; color: var(--muted); margin-bottom: 3px; letter-spacing: 0.05em; text-transform: uppercase; }
+  .check-item { display: flex; align-items: center; gap: 5px; color: var(--text); padding: 1px 0; }
+  .check-item::before { content: '□'; color: var(--muted); flex-shrink: 0; }
+
+  /* HANDOFF FLOW */
+  .handoff-flow {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 20px 24px;
+  }
+  .hf-steps { display: flex; flex-direction: column; gap: 0; }
+  .hf-step {
+    display: flex; gap: 16px; align-items: flex-start;
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+  }
+  .hf-step:last-child { border-bottom: none; }
+  .hf-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+  }
+  .hf-num.tunnel-step { background: rgba(124,58,237,0.3); color: #a78bfa; border: 1px solid rgba(124,58,237,0.5); }
+  .hf-num.normal-step { background: var(--bg3); color: var(--muted); border: 1px solid var(--border); }
+  .hf-content .title { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+  .hf-content .desc { font-size: 11px; color: var(--muted); }
+
+  /* OP GUARDS */
+  .op-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .op-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px 14px;
+  }
+  .op-card.new { border-color: rgba(124,58,237,0.4); }
+  .op-id { font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: 0.1em; margin-bottom: 3px; }
+  .op-id.new-op { color: #a78bfa; }
+  .op-name { font-size: 11px; font-weight: 700; margin-bottom: 3px; }
+  .op-desc { font-size: 10px; color: var(--muted); line-height: 1.5; }
+
+  /* FORBIDDEN */
+  .forbidden-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  .forbidden-group {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px;
+  }
+  .forbidden-group h3 { font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+  .forbidden-item {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 5px 0; border-bottom: 1px solid var(--border);
+    font-size: 11px;
+  }
+  .forbidden-item:last-child { border-bottom: none; }
+  .forbidden-item::before { content: '❌'; font-size: 10px; flex-shrink: 0; margin-top: 1px; }
+
+  /* SECTION ORDER */
+  .section-flow {
+    display: flex; align-items: stretch; gap: 0;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden;
+  }
+  .sf-item {
+    flex: 1; padding: 14px 12px; text-align: center;
+    border-right: 1px solid var(--border);
+    position: relative;
+  }
+  .sf-item:last-child { border-right: none; }
+  .sf-name { font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+  .sf-bg { font-size: 9px; color: var(--muted); font-family: monospace; }
+  .sf-item.bg-image { border-top: 3px solid #6366f1; }
+  .sf-item.bg-subtle { border-top: 3px solid #475569; }
+  .sf-item.bg-white  { border-top: 3px solid #94a3b8; }
+  .sf-item.bg-dark   { border-top: 3px solid #1e293b; }
+  .sf-item.bg-accent { border-top: 3px solid var(--accent); }
+
+  /* BLOCKS */
+  .blocks-section { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .block-group {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden;
+  }
+  .block-group-header {
+    padding: 10px 14px; background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+    font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .block-table { width: 100%; border-collapse: collapse; }
+  .block-table td { padding: 7px 14px; font-size: 11px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .block-table tr:last-child td { border-bottom: none; }
+  .block-table td:first-child { font-weight: 700; font-family: monospace; color: #a78bfa; white-space: nowrap; }
+  .block-table td:nth-child(2) { color: var(--text); width: 40%; }
+  .block-table td:last-child { color: var(--muted); font-size: 10px; }
+
+  /* COMMANDS */
+  .cmd-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .cmd-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px 14px;
+  }
+  .cmd-name { font-family: monospace; font-size: 12px; font-weight: 700; color: var(--haiku); margin-bottom: 4px; }
+  .cmd-desc { font-size: 10px; color: var(--muted); }
+
+  /* MODEL LEGEND */
+  .model-legend {
+    display: flex; gap: 16px; margin-bottom: 16px;
+    padding: 12px 16px; background: var(--bg2);
+    border: 1px solid var(--border); border-radius: 8px;
+  }
+  .model-item { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+  .model-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* IX LIBRARY */
+  .ix-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .ix-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 12px;
+  }
+  .ix-code { font-family: monospace; font-size: 11px; font-weight: 700; color: var(--opus); margin-bottom: 3px; }
+  .ix-name { font-size: 10px; color: var(--muted); }
+  .ix-card.core { border-color: rgba(245,158,11,0.3); }
+
+  /* STATUS */
+  .ok { color: var(--green); font-weight: 700; }
+  .warn { color: var(--red); font-weight: 700; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>tomob AI 팀 시스템 <span>v6</span></h1>
+  <div class="header-meta">
+    <span class="badge badge-v6">Agent Teams</span>
+    <span class="badge badge-opus">Opus 4.6</span>
+    <span style="font-size:11px;color:var(--muted)">팀원 22명 · 에이전트 등록 완료</span>
+  </div>
+</div>
+
+<nav class="nav">
+  <a href="#pipeline">파이프라인</a>
+  <a href="#teams">팀 구조</a>
+  <a href="#tunnel">터널 검문</a>
+  <a href="#handoff">핸드오프</a>
+  <a href="#op">OP 가드레일</a>
+  <a href="#forbidden">절대 금지</a>
+  <a href="#sections">섹션 순서</a>
+  <a href="#blocks">블록 시스템</a>
+  <a href="#ix">IX 라이브러리</a>
+  <a href="#commands">명령어</a>
+</nav>
+
+<div class="page">
+
+  <!-- PIPELINE -->
+  <section id="pipeline">
+    <h2>파이프라인</h2>
+    <div class="pipeline">
+      <div class="pipe-step">
+        <div class="icon">👑</div>
+        <div class="label">사령관</div>
+        <div class="sub">요청</div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">
+        <div class="icon">📋</div>
+        <div class="label">/scope</div>
+        <div class="sub">범위 확인</div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">
+        <div class="icon">📐</div>
+        <div class="label">/plan</div>
+        <div class="sub">구조 설계</div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">
+        <div class="icon">🧭</div>
+        <div class="label">시온 팀</div>
+        <div class="sub">전략·리서치</div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step tunnel">
+        <div class="icon">🚧</div>
+        <div class="label">터널</div>
+        <div class="sub">검문</div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">
+        <div class="icon">🎨</div>
+        <div class="label">프레이 팀</div>
+        <div class="sub">브랜딩·기획</div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step tunnel">
+        <div class="icon">🚧</div>
+        <div class="label">터널</div>
+        <div class="sub">검문</div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">
+        <div class="icon">✍️</div>
+        <div class="label">피어 팀</div>
+        <div class="sub">카피·문서</div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">
+        <div class="icon">🏗️</div>
+        <div class="label">에이미 팀</div>
+        <div class="sub">코드·검수</div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">
+        <div class="icon">✅</div>
+        <div class="label">최종 보고</div>
+        <div class="sub">앤 → 사령관</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEAMS -->
+  <section id="teams">
+    <h2>팀 구조 · 모델 배분</h2>
+    <div class="model-legend">
+      <div class="model-item"><div class="model-dot" style="background:var(--sonnet)"></div>Sonnet — 전 팀원 22명 (터널 포함)</div>
+    </div>
+    <div class="teams-grid">
+
+      <!-- 시온 팀 -->
+      <div class="team-card">
+        <div class="team-header">
+          <span class="team-icon">🧭</span>
+          <span class="team-name">시온 팀</span>
+          <span class="team-sub">Strategy</span>
+        </div>
+        <div class="member-list">
+          <div class="member"><div class="member-info"><div class="name">액시엄</div><div class="role">PMF 가설</div></div><span class="badge badge-sonnet">sonnet</span></div>
+          <div class="member"><div class="member-info"><div class="name">세레스</div><div class="role">데스크 리서치</div></div><span class="badge badge-sonnet">sonnet</span></div>
+          <div class="member"><div class="member-info"><div class="name">아틀라스</div><div class="role">전략 수립</div></div><span class="badge badge-sonnet">sonnet</span></div>
+          <div class="member"><div class="member-info"><div class="name">아이리스</div><div class="role">페르소나</div></div><span class="badge badge-sonnet">sonnet</span></div>
+          <div class="member"><div class="member-info"><div class="name">리콘</div><div class="role">경쟁사 분석</div></div><span class="badge badge-sonnet">sonnet</span></div>
+          <div class="member"><div class="member-info"><div class="name">사이퍼</div><div class="role">키워드/SEO</div></div><span class="badge badge-sonnet">sonnet</span></div>
+          <div class="member"><div class="member-info"><div class="name">리아</div><div class="role">마케팅 전략</div></div><span class="badge badge-sonnet">sonnet</span></div>
+        </div>
+      </div>
+
+      <!-- 프레이 팀 -->
+      <div class="team-card">
+        <div class="team-header">
+          <span class="team-icon">🎨</span>
+          <span class="team-name">프레이 팀</span>
+          <span class="team-sub">Builder</span>
+        </div>
+        <div class="member-list">
+          <div class="member"><div class="member-info"><div class="name">노바</div><div class="role">브랜딩 BEAT</div></div><span class="badge badge-sonnet">sonnet</span></div>
+          <div class="member"><div class="member-info"><div class="name">리라</div><div class="role">무드보드</div></div><span class="badge badge-sonnet">sonnet</span></div>
+          <div class="member"><div class="member-info"><div class="name">윈터</div><div class="role">디자인 시스템</div></div><span class="badge badge-sonnet">sonnet</span></div>
+          <div class="member"><div class="member-info"><div class="name">제이나</div><div class="role">랜딩 기획</div></div><span class="badge badge-sonnet">sonnet</span></div>
+          <div class="member"><div class="member-info"><div class="name">시엘</div><div class="role">퍼블리싱</div></div><span class="badge badge-sonnet">sonnet</span></div>
+        </div>
+      </div>
+
+      <!-- 피어 팀 -->
+      <div class="team-card">
+        <div class="team-header">
+          <span class="team-icon">✍️</span>
+          <span class="team-name">피어 팀</span>
+          <span class="team-sub">Scribe</span>
+        </div>
+        <div class="member-list">
+          <div class="member"><div class="member-info"><div class="name">페이</div><div class="role">랜딩 카피</div></div><span class="badge badge-sonnet">sonnet</span></div>
+          <div class="member"><div class="member-info"><div class="name">프로즈</div><div class="role">블로그</div></div><span class="badge badge-sonnet">sonnet</span></div>
+          <div class="member"><div class="member-info"><div class="name">메모</div><div class="role">이메일</div></div><span class="badge badge-sonnet">sonnet</span></div>
+          <div class="member"><div class="member-info"><div class="name">스트라이크</div><div class="role">콜드메일</div></div><span class="badge badge-sonnet">sonnet</span></div>
+          <div class="member"><div class="member-info"><div class="name">드래프트</div><div class="role">제안서</div></div><span class="badge badge-sonnet">sonnet</span></div>
+          <div class="member"><div class="member-info"><div class="name">퀼</div><div class="role">견적서</div></div><span class="badge badge-sonnet">sonnet</span></div>
+        </div>
+      </div>
+
+      <!-- 에이미 팀 -->
+      <div class="team-card">
+        <div class="team-header">
+          <span class="team-icon">🏗️</span>
+          <span class="team-name">에이미 팀</span>
+          <span class="team-sub">Architect</span>
+        </div>
+        <div class="member-list">
+          <div class="member"><div class="member-info"><div class="name">포지</div><div class="role">코드 작성</div></div><span class="badge badge-sonnet">sonnet</span></div>
+          <div class="member"><div class="member-info"><div class="name">렌즈</div><div class="role">코드 검수</div></div><span class="badge badge-sonnet">sonnet</span></div>
+          <div class="member"><div class="member-info"><div class="name">트림</div><div class="role">성능 최적화</div></div><span class="badge badge-sonnet">sonnet</span></div>
+        </div>
+        <div style="padding: 10px 16px; border-top: 1px solid var(--border); font-size: 10px; color: var(--muted);">
+          순서: 포지 → 렌즈 → 트림 (순차 필수)
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- TUNNEL -->
+  <section id="tunnel">
+    <h2>터널 — 독립 검문관</h2>
+    <div class="tunnel-card">
+      <div class="tunnel-icon">🚧</div>
+      <div>
+        <div class="tunnel-name">터널 (Tunnel)</div>
+        <div class="tunnel-desc">앤 직속 · 독립 에이전트 · <strong style="color:var(--opus)">opus</strong> · 모든 /handoff 시 자동 개입 · 우회 불가</div>
+        <div style="margin-top:10px; font-size:11px; color:var(--red);">
+          ⚠️ 터널 ❌ 차단 시 → 인계 전면 차단. 팀장 포함 누구도 우회 불가.
+        </div>
+      </div>
+      <div class="tunnel-checks">
+        <div class="check-group">
+          <div class="group-title">1. OP 가드레일</div>
+          <div class="check-item">OP_02 타겟·퍼널·메시지 확정</div>
+          <div class="check-item">OP_03 레퍼런스 분석 완료</div>
+          <div class="check-item">OP_05 완료 기준 합의</div>
+          <div class="check-item">OP_11 이전 결과물 실존</div>
+        </div>
+        <div class="check-group" style="margin-top:8px;">
+          <div class="group-title">2. 금지 패턴 (디자인 인계)</div>
+          <div class="check-item">OP_09 신호 A~G 전항목</div>
+          <div class="check-item">섹션 순서 준수</div>
+          <div class="check-item">CTA 3곳 이상</div>
+          <div class="check-item">소셜 증거 존재</div>
+        </div>
+        <div class="check-group" style="margin-top:8px;">
+          <div class="group-title">3. 재료 상태</div>
+          <div class="check-item">/mat 최신 업데이트</div>
+          <div class="check-item">컨펌 구조 일치</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HANDOFF -->
+  <section id="handoff">
+    <h2>핸드오프 흐름</h2>
+    <div class="handoff-flow">
+      <div class="hf-steps">
+        <div class="hf-step">
+          <div class="hf-num tunnel-step">1</div>
+          <div class="hf-content">
+            <div class="title">터널 검문 자동 실행 (OP_15)</div>
+            <div class="desc">앤이 터널 Agent 호출 → 3개 항목 전체 검문</div>
+          </div>
+        </div>
+        <div class="hf-step">
+          <div class="hf-num tunnel-step" style="background:rgba(239,68,68,0.2);color:#f87171;border-color:rgba(239,68,68,0.4);">❌</div>
+          <div class="hf-content">
+            <div class="title" style="color:var(--red);">터널 차단 시</div>
+            <div class="desc">재작업 팀원 지정 → 수정 완료 후 /handoff 재호출</div>
+          </div>
+        </div>
+        <div class="hf-step">
+          <div class="hf-num tunnel-step" style="background:rgba(74,222,128,0.2);color:#4ade80;border-color:rgba(74,222,128,0.4);">✅</div>
+          <div class="hf-content">
+            <div class="title" style="color:var(--green);">터널 통과 시</div>
+            <div class="desc">인계 문서 자동 생성 (섹션 11 포맷)</div>
+          </div>
+        </div>
+        <div class="hf-step">
+          <div class="hf-num normal-step">2</div>
+          <div class="hf-content">
+            <div class="title">인계 문서 생성</div>
+            <div class="desc">완료된 것 / 넘기는 것 / 주의사항 / 다음 할 것 / 실수 로그</div>
+          </div>
+        </div>
+        <div class="hf-step">
+          <div class="hf-num normal-step">3</div>
+          <div class="hf-content">
+            <div class="title">TaskUpdate + 다음 팀 TaskCreate</div>
+            <div class="desc">공유 태스크리스트 자동 인계</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OP GUARDRAILS -->
+  <section id="op">
+    <h2>OP 가드레일 시스템 v2</h2>
+    <div class="op-grid">
+      <div class="op-card"><div class="op-id">OP_01 COMPASS</div><div class="op-name">방향 나침반</div><div class="op-desc">합의된 방향과 다른 요청 감지 시 확인 후 진행</div></div>
+      <div class="op-card"><div class="op-id">OP_02 GATE</div><div class="op-name">제작 게이트</div><div class="op-desc">제작 직전 타겟·퍼널·핵심 메시지 확정 여부 체크</div></div>
+      <div class="op-card"><div class="op-id">OP_03 MIRROR</div><div class="op-name">레퍼런스 미러</div><div class="op-desc">레퍼런스 분석 없이 실행 금지</div></div>
+      <div class="op-card"><div class="op-id">OP_04 LENS</div><div class="op-name">디자인 렌즈</div><div class="op-desc">디자인 결과물 보고 전 그리드·여백·AI 느낌 체크</div></div>
+      <div class="op-card"><div class="op-id">OP_05 FLAG</div><div class="op-name">완료 플래그</div><div class="op-desc">완료 기준 사전 합의 없이 완료 선언 금지</div></div>
+      <div class="op-card"><div class="op-id">OP_06 TRUTH</div><div class="op-name">진실 원칙</div><div class="op-desc">확실하지 않으면 "모릅니다" / "확인 필요" 먼저</div></div>
+      <div class="op-card"><div class="op-id">OP_07 SYNC-ZERO</div><div class="op-name">세션 동기화</div><div class="op-desc">세션 시작 시 이 프롬프트 기준 선언 자동 실행</div></div>
+      <div class="op-card"><div class="op-id">OP_08 SEARCH-DEEP</div><div class="op-name">깊은 검색</div><div class="op-desc">과거 기록 검색 포기 금지</div></div>
+      <div class="op-card"><div class="op-id">OP_09 DESIGN-DNA</div><div class="op-name">디자인 DNA</div><div class="op-desc">Claude 기본값 침투 감지 즉시 재작업 (신호 A~G)</div></div>
+      <div class="op-card"><div class="op-id">OP_10 WEB_SEARCH</div><div class="op-name">웹 검색</div><div class="op-desc">외부 플랫폼 기능은 검색 후에만 답변</div></div>
+      <div class="op-card"><div class="op-id">OP_11 PIPELINE</div><div class="op-name">파이프라인</div><div class="op-desc">/handoff 없이 다음 팀 이동 금지</div></div>
+      <div class="op-card"><div class="op-id">OP_12 SCOPE</div><div class="op-name">스코프</div><div class="op-desc">대형 작업 전 /scope 필수</div></div>
+      <div class="op-card"><div class="op-id">OP_13 LOG</div><div class="op-name">실수 로그</div><div class="op-desc">렌즈 ❌ 반려 발생 시 앤이 즉시 /log 작성 요청</div></div>
+      <div class="op-card"><div class="op-id">OP_14 MAT</div><div class="op-name">재료 추적</div><div class="op-desc">재료 변경 발언 감지 시 앤이 즉시 /mat 업데이트</div></div>
+      <div class="op-card new"><div class="op-id new-op">OP_15 TUNNEL ✨NEW</div><div class="op-name">터널 검문</div><div class="op-desc">모든 /handoff 호출 시 터널 검문 필수. ✅ 없이 인계 차단</div></div>
+    </div>
+  </section>
+
+  <!-- FORBIDDEN -->
+  <section id="forbidden">
+    <h2>절대 금지 · OP_09 침투 신호</h2>
+    <div class="forbidden-grid">
+      <div class="forbidden-group">
+        <h3>OP_09 침투 신호 A~G (감지 시 전면 재작업)</h3>
+        <div class="forbidden-item">Inter · Roboto · Arial 폰트 사용</div>
+        <div class="forbidden-item">clip-path 섹션 전환</div>
+        <div class="forbidden-item">보라 그라디언트 배경</div>
+        <div class="forbidden-item">아이콘 + 짧은 설명 카드 4개 나란히</div>
+        <div class="forbidden-item">grain · noise 텍스처</div>
+        <div class="forbidden-item">이모지를 이미지 대신 사용</div>
+        <div class="forbidden-item">히어로 대형 이탤릭 단독</div>
+      </div>
+      <div class="forbidden-group">
+        <h3>렌즈 B항목 (하나라도 반려)</h3>
+        <div class="forbidden-item">히어로 제목 clamp 최대값 64px 초과</div>
+        <div class="forbidden-item">전체 배경 단색 다크</div>
+        <div class="forbidden-item">CTA 1개만 존재</div>
+        <div class="forbidden-item">소셜 증거 없는 구성</div>
+        <div class="forbidden-item">passive:true 없는 scroll 이벤트</div>
+        <div class="forbidden-item">will-change: all 사용</div>
+        <div class="forbidden-item">이미지 자리를 색상·그라디언트로 대체</div>
+        <div class="forbidden-item">섹션 순서 임의 변경</div>
+        <div class="forbidden-item">레이아웃 확정 전 IX 코드 먼저 작성</div>
+        <div class="forbidden-item">한 페이지 IX 4종 초과</div>
+        <div class="forbidden-item">모바일에서 IX-04 수평 스크롤</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION ORDER -->
+  <section id="sections">
+    <h2>섹션 순서 (절대 준수)</h2>
+    <div class="section-flow">
+      <div class="sf-item bg-image"><div class="sf-name">Hero</div><div class="sf-bg">이미지 풀블리드 / bg-dark</div></div>
+      <div class="sf-item bg-subtle"><div class="sf-name">Social</div><div class="sf-bg">--bg-subtle</div></div>
+      <div class="sf-item bg-white"><div class="sf-name">Pain</div><div class="sf-bg">--bg</div></div>
+      <div class="sf-item bg-white"><div class="sf-name">Solution</div><div class="sf-bg">--bg / --bg-subtle 교차</div></div>
+      <div class="sf-item bg-dark"><div class="sf-name">Process</div><div class="sf-bg">--bg-dark / --accent</div></div>
+      <div class="sf-item bg-white"><div class="sf-name">Proof</div><div class="sf-bg">--bg</div></div>
+      <div class="sf-item bg-subtle"><div class="sf-name">FAQ</div><div class="sf-bg">--bg-subtle</div></div>
+      <div class="sf-item bg-accent"><div class="sf-name">CTA</div><div class="sf-bg">--accent</div></div>
+    </div>
+  </section>
+
+  <!-- BLOCKS -->
+  <section id="blocks">
+    <h2>블록 시스템</h2>
+    <div class="blocks-section">
+      <div class="block-group">
+        <div class="block-group-header">HERO 블록</div>
+        <table class="block-table">
+          <tr><td>H-01</td><td>센터 텍스트 + 하단 스크린샷</td><td>IX-03 + IX-01</td></tr>
+          <tr><td>H-02 ★</td><td>좌텍스트 / 우이미지 55:45</td><td>IX-03 + IX-06(0.1)</td></tr>
+          <tr><td>H-03</td><td>풀블리드 + 좌하단 텍스트</td><td>IX-06(0.1) + IX-03</td></tr>
+          <tr><td>H-04</td><td>벤토 그리드 카드</td><td>LY-03 + IX-02 stagger</td></tr>
+          <tr><td>H-05</td><td>다크 + 중앙 텍스트 + 부유 칩</td><td>IX-03</td></tr>
+          <tr><td>H-06</td><td>좌텍스트 / 우이미지 + callout</td><td>IX-02(callout) + IX-03</td></tr>
+          <tr><td>H-07</td><td>좌 스크롤 텍스트 / 우 sticky</td><td>IX-04 + IX-03</td></tr>
+        </table>
+      </div>
+      <div class="block-group">
+        <div class="block-group-header">FEATURE 블록</div>
+        <table class="block-table">
+          <tr><td>F-01</td><td>이미지+텍스트 교차 세트 (2회↑)</td><td>IX-01 + IX-06(0.12)</td></tr>
+          <tr><td>F-02</td><td>3컬럼 아이콘 카드</td><td>IX-02 stagger</td></tr>
+          <tr><td>F-03</td><td>벤토 비대칭 그리드</td><td>LY-03 + IX-02</td></tr>
+          <tr><td>F-04</td><td>좌 sticky / 우 스크롤 카드</td><td>LY-01 + IX-01</td></tr>
+          <tr><td>F-05</td><td>탭 전환형</td><td>IX-08</td></tr>
+          <tr><td>F-06</td><td>4단계 가로 스텝</td><td>IX-02 stagger</td></tr>
+          <tr><td>F-07</td><td>다크 배경 대형 숫자 4개</td><td>IX-02 stagger</td></tr>
+        </table>
+      </div>
+      <div class="block-group">
+        <div class="block-group-header">SOCIAL PROOF · CTA 블록</div>
+        <table class="block-table">
+          <tr><td>SP-01</td><td>3열 후기 카드</td><td>IX-02 stagger</td></tr>
+          <tr><td>SP-02</td><td>대형 인용문 1개</td><td>IX-01</td></tr>
+          <tr><td>SP-03</td><td>로고 자동 마퀴</td><td>CSS animation</td></tr>
+          <tr><td>SP-04</td><td>수평 슬라이더</td><td>CSS scroll</td></tr>
+          <tr><td>CTA-01</td><td>풀너비 강조색 + urgency</td><td>IX-05(버튼 1개)</td></tr>
+          <tr><td>CTA-02</td><td>중앙 텍스트 + 버튼 2개</td><td>IX-01</td></tr>
+          <tr><td>CTA-03</td><td>얇은 긴급 배너 띠</td><td>없음</td></tr>
+          <tr><td>CTA-04</td><td>좌텍스트 / 우버튼 분할</td><td>IX-01</td></tr>
+        </table>
+      </div>
+      <div class="block-group">
+        <div class="block-group-header">스타일 선택 기준</div>
+        <table class="block-table">
+          <tr><td>style_A</td><td>warm_editorial</td><td>라이프스타일 · 감성 · 카페 · 베이커리</td></tr>
+          <tr><td>style_B</td><td>clean_professional</td><td>전문직 · 법무 · 세무 · 컨설팅 · 병원</td></tr>
+          <tr><td>style_C</td><td>bold_impact</td><td>이벤트 · 강렬한 첫인상 · 헬스 · 교육</td></tr>
+          <tr><td>style_D</td><td>saas_modern</td><td>SaaS · 테크 · 스타트업 · IT</td></tr>
+          <tr><td>style_E</td><td>commerce_direct</td><td>쇼핑몰 · D2C · 뷰티 · 패션</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- IX LIBRARY -->
+  <section id="ix">
+    <h2>IX 인터랙션 라이브러리 (4종 한도)</h2>
+    <div class="ix-grid">
+      <div class="ix-card core"><div class="ix-code">IX-01</div><div class="ix-name">스크롤 리빌 (기본 필수)</div></div>
+      <div class="ix-card core"><div class="ix-code">IX-02</div><div class="ix-name">카드 슬라이드인 stagger</div></div>
+      <div class="ix-card core"><div class="ix-code">IX-03</div><div class="ix-name">텍스트 라인 리빌 (히어로 전용)</div></div>
+      <div class="ix-card core"><div class="ix-code">IX-06</div><div class="ix-name">이미지 패럴랙스 (히어로 이미지 전용)</div></div>
+      <div class="ix-card"><div class="ix-code">IX-04</div><div class="ix-name">스크롤 연동 수평 이동 (H-07 전용)</div></div>
+      <div class="ix-card"><div class="ix-code">IX-05</div><div class="ix-name">호버 마그네틱 버튼 (CTA-01 1개만)</div></div>
+      <div class="ix-card"><div class="ix-code">IX-07</div><div class="ix-name">프로그레스 바 (케이스스터디 전용)</div></div>
+      <div class="ix-card"><div class="ix-code">IX-08</div><div class="ix-name">섹션 전환 페이드 (F-05 탭 전용)</div></div>
+    </div>
+    <div style="margin-top:8px; padding: 10px 14px; background:var(--bg2); border:1px solid rgba(245,158,11,0.3); border-radius:8px; font-size:11px; color:var(--opus);">
+      ⚠️ 황금 테두리 = 기본 조합 4종. 이 중 1개를 빼야 나머지 추가 가능.
+    </div>
+  </section>
+
+  <!-- COMMANDS -->
+  <section id="commands">
+    <h2>명령어 레지스트리</h2>
+    <div class="cmd-grid">
+      <div class="cmd-card"><div class="cmd-name">/start [업체명]</div><div class="cmd-desc">재료 보고 + 스타일 추천 → 컨펌 대기</div></div>
+      <div class="cmd-card"><div class="cmd-name">/build [업체명]</div><div class="cmd-desc">구조 설계 보고 → 컨펌 후 코드 작성</div></div>
+      <div class="cmd-card"><div class="cmd-name">/check</div><div class="cmd-desc">코드 오류 / 금지 패턴 / 구조 일치 검수</div></div>
+      <div class="cmd-card"><div class="cmd-name">/scope [요청]</div><div class="cmd-desc">대형 작업 범위 확인 + 옵션 3단계 제시</div></div>
+      <div class="cmd-card"><div class="cmd-name">/plan [작업명]</div><div class="cmd-desc">코드 작성 전 구조 설계 컨펌 게이트</div></div>
+      <div class="cmd-card"><div class="cmd-name">/status</div><div class="cmd-desc">진행 중 프로젝트 현황 대시보드</div></div>
+      <div class="cmd-card"><div class="cmd-name">/resume [프로젝트]</div><div class="cmd-desc">이전 작업 맥락 복원</div></div>
+      <div class="cmd-card"><div class="cmd-name">/handoff [A→B]</div><div class="cmd-desc">터널 검문 → 인계 문서 생성</div></div>
+      <div class="cmd-card"><div class="cmd-name">/review</div><div class="cmd-desc">결과물 전체 검토 + 렌즈 검수</div></div>
+      <div class="cmd-card"><div class="cmd-name">/retro [프로젝트]</div><div class="cmd-desc">완료 회고 + 누적 로그 전체 출력</div></div>
+      <div class="cmd-card"><div class="cmd-name">/log [내용]</div><div class="cmd-desc">실수·수정 기록</div></div>
+      <div class="cmd-card"><div class="cmd-name">/mat [업체명]</div><div class="cmd-desc">재료 상태 확인 및 추적</div></div>
+    </div>
+  </section>
+
+  <!-- AGENT CALL FORMAT -->
+  <section id="agent-call">
+    <h2>Agent 호출 형식 (모델 파라미터 필수)</h2>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:20px 24px;">
+      <div style="font-family:monospace;font-size:12px;line-height:2;color:var(--text);">
+        <span style="color:var(--haiku)">Agent</span>(<br>
+        &nbsp;&nbsp;<span style="color:var(--muted)">subagent_type:</span> <span style="color:#86efac">"general-purpose"</span>,<br>
+        &nbsp;&nbsp;<span style="color:var(--muted)">model:</span> <span style="color:#86efac">"[팀원 지정 모델]"</span>, <span style="color:#555">&nbsp;← 아래 배분표 기준 필수</span><br>
+        &nbsp;&nbsp;<span style="color:var(--muted)">description:</span> <span style="color:#86efac">"[팀명] — [작업 3~5단어]"</span>,<br>
+        &nbsp;&nbsp;<span style="color:var(--muted)">prompt:</span> <span style="color:#86efac">"[팀원 역할 + CLAUDE.md 기준 + 작업 지시]"</span><br>
+        )
+      </div>
+      <div style="margin-top:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+        <div style="background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.3);border-radius:8px;padding:12px;grid-column:span 3;">
+          <div style="font-size:10px;font-weight:700;color:var(--sonnet);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;">sonnet — 전 팀원 22명</div>
+          <div style="font-size:11px;color:var(--text);line-height:2;">
+            <span style="color:var(--muted)">시온:</span> 액시엄 · 세레스 · 아틀라스 · 아이리스 · 리콘 · 사이퍼 · 리아 &nbsp;
+            <span style="color:var(--muted)">프레이:</span> 노바 · 리라 · 윈터 · 제이나 · 시엘<br>
+            <span style="color:var(--muted)">피어:</span> 페이 · 프로즈 · 메모 · 스트라이크 · 드래프트 · 퀼 &nbsp;
+            <span style="color:var(--muted)">에이미:</span> 포지 · 렌즈 · 트림 &nbsp;
+            <span style="color:var(--muted)">독립:</span> 터널
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div style="padding: 24px 0; text-align:center; font-size:11px; color:var(--muted); border-top:1px solid var(--border);">
+    tomob AI 팀 시스템 v6 · 팀원 22명 전원 Sonnet · 2026-03-28
+  </div>
+
+</div>
+</body>
+</html>
