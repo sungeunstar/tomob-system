@@ -102,7 +102,7 @@
   .pipe-step .label { font-size: 11px; font-weight: 600; color: var(--text); }
   .pipe-step .sub { font-size: 10px; color: var(--muted); }
   .pipe-arrow { color: var(--muted); margin: 0 8px; font-size: 16px; flex-shrink: 0; }
-  .pipe-step.tunnel .icon { background: rgba(124,58,237,0.2); border-color: rgba(124,58,237,0.4); }
+  .pipe-step.arc .icon { background: rgba(124,58,237,0.2); border-color: rgba(124,58,237,0.4); }
 
   /* TEAMS GRID */
   .teams-grid {
@@ -135,22 +135,22 @@
   .member-info .name { font-size: 12px; font-weight: 600; }
   .member-info .role { font-size: 10px; color: var(--muted); }
 
-  /* TUNNEL CARD */
-  .tunnel-card {
+  /* ARC CARD */
+  .arc-card {
     background: var(--bg2); border: 1px solid rgba(124,58,237,0.4);
     border-radius: 10px; padding: 20px 24px;
     display: grid; grid-template-columns: auto 1fr auto;
     gap: 20px; align-items: start;
     margin-bottom: 16px;
   }
-  .tunnel-icon {
+  .arc-icon {
     width: 48px; height: 48px; background: rgba(124,58,237,0.2);
     border: 1px solid rgba(124,58,237,0.4); border-radius: 10px;
     display: flex; align-items: center; justify-content: center; font-size: 22px;
   }
-  .tunnel-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
-  .tunnel-desc { font-size: 11px; color: var(--muted); }
-  .tunnel-checks { display: flex; flex-direction: column; gap: 6px; }
+  .arc-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .arc-desc { font-size: 11px; color: var(--muted); }
+  .arc-checks { display: flex; flex-direction: column; gap: 6px; }
   .check-group { font-size: 10px; }
   .check-group .group-title { font-weight: 700; color: var(--muted); margin-bottom: 3px; letter-spacing: 0.05em; text-transform: uppercase; }
   .check-item { display: flex; align-items: center; gap: 5px; color: var(--text); padding: 1px 0; }
@@ -172,7 +172,7 @@
     display: flex; align-items: center; justify-content: center;
     font-size: 11px; font-weight: 700;
   }
-  .hf-num.tunnel-step { background: rgba(124,58,237,0.3); color: #a78bfa; border: 1px solid rgba(124,58,237,0.5); }
+  .hf-num.arc-step { background: rgba(124,58,237,0.3); color: #a78bfa; border: 1px solid rgba(124,58,237,0.5); }
   .hf-num.normal-step { background: var(--bg3); color: var(--muted); border: 1px solid var(--border); }
   .hf-content .title { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
   .hf-content .desc { font-size: 11px; color: var(--muted); }
@@ -301,7 +301,7 @@
 <nav class="nav">
   <a href="#pipeline">파이프라인</a>
   <a href="#teams">팀 구조</a>
-  <a href="#tunnel">터널 검문</a>
+  <a href="#arc">아크 검문</a>
   <a href="#handoff">핸드오프</a>
   <a href="#op">OP 가드레일</a>
   <a href="#forbidden">절대 금지</a>
@@ -341,9 +341,9 @@
         <div class="sub">전략·리서치</div>
       </div>
       <div class="pipe-arrow">→</div>
-      <div class="pipe-step tunnel">
+      <div class="pipe-step arc">
         <div class="icon">🚧</div>
-        <div class="label">터널</div>
+        <div class="label">아크</div>
         <div class="sub">검문</div>
       </div>
       <div class="pipe-arrow">→</div>
@@ -353,9 +353,9 @@
         <div class="sub">브랜딩·기획</div>
       </div>
       <div class="pipe-arrow">→</div>
-      <div class="pipe-step tunnel">
+      <div class="pipe-step arc">
         <div class="icon">🚧</div>
-        <div class="label">터널</div>
+        <div class="label">아크</div>
         <div class="sub">검문</div>
       </div>
       <div class="pipe-arrow">→</div>
@@ -383,7 +383,7 @@
   <section id="teams">
     <h2>팀 구조 · 모델 배분</h2>
     <div class="model-legend">
-      <div class="model-item"><div class="model-dot" style="background:var(--sonnet)"></div>Sonnet — 전 팀원 22명 (터널 포함)</div>
+      <div class="model-item"><div class="model-dot" style="background:var(--sonnet)"></div>Sonnet — 전 팀원 22명 (아크 포함)</div>
     </div>
     <div class="teams-grid">
 
@@ -458,19 +458,19 @@
     </div>
   </section>
 
-  <!-- TUNNEL -->
-  <section id="tunnel">
-    <h2>터널 — 독립 검문관</h2>
-    <div class="tunnel-card">
-      <div class="tunnel-icon">🚧</div>
+  <!-- ARC -->
+  <section id="arc">
+    <h2>아크 — 독립 검문관</h2>
+    <div class="arc-card">
+      <div class="arc-icon">🚧</div>
       <div>
-        <div class="tunnel-name">터널 (Tunnel)</div>
-        <div class="tunnel-desc">앤 직속 · 독립 에이전트 · <strong style="color:var(--opus)">opus</strong> · 모든 /handoff 시 자동 개입 · 우회 불가</div>
+        <div class="arc-name">아크 (Arc)</div>
+        <div class="arc-desc">앤 직속 · 독립 에이전트 · <strong style="color:var(--opus)">opus</strong> · 모든 /handoff 시 자동 개입 · 우회 불가</div>
         <div style="margin-top:10px; font-size:11px; color:var(--red);">
-          ⚠️ 터널 ❌ 차단 시 → 인계 전면 차단. 팀장 포함 누구도 우회 불가.
+          ⚠️ 아크 ❌ 차단 시 → 인계 전면 차단. 팀장 포함 누구도 우회 불가.
         </div>
       </div>
-      <div class="tunnel-checks">
+      <div class="arc-checks">
         <div class="check-group">
           <div class="group-title">1. OP 가드레일</div>
           <div class="check-item">OP_02 타겟·퍼널·메시지 확정</div>
@@ -500,23 +500,23 @@
     <div class="handoff-flow">
       <div class="hf-steps">
         <div class="hf-step">
-          <div class="hf-num tunnel-step">1</div>
+          <div class="hf-num arc-step">1</div>
           <div class="hf-content">
-            <div class="title">터널 검문 자동 실행 (OP_15)</div>
-            <div class="desc">앤이 터널 Agent 호출 → 3개 항목 전체 검문</div>
+            <div class="title">아크 검문 자동 실행 (OP_15)</div>
+            <div class="desc">앤이 아크 Agent 호출 → 3개 항목 전체 검문</div>
           </div>
         </div>
         <div class="hf-step">
-          <div class="hf-num tunnel-step" style="background:rgba(239,68,68,0.2);color:#f87171;border-color:rgba(239,68,68,0.4);">❌</div>
+          <div class="hf-num arc-step" style="background:rgba(239,68,68,0.2);color:#f87171;border-color:rgba(239,68,68,0.4);">❌</div>
           <div class="hf-content">
-            <div class="title" style="color:var(--red);">터널 차단 시</div>
+            <div class="title" style="color:var(--red);">아크 차단 시</div>
             <div class="desc">재작업 팀원 지정 → 수정 완료 후 /handoff 재호출</div>
           </div>
         </div>
         <div class="hf-step">
-          <div class="hf-num tunnel-step" style="background:rgba(74,222,128,0.2);color:#4ade80;border-color:rgba(74,222,128,0.4);">✅</div>
+          <div class="hf-num arc-step" style="background:rgba(74,222,128,0.2);color:#4ade80;border-color:rgba(74,222,128,0.4);">✅</div>
           <div class="hf-content">
-            <div class="title" style="color:var(--green);">터널 통과 시</div>
+            <div class="title" style="color:var(--green);">아크 통과 시</div>
             <div class="desc">인계 문서 자동 생성 (섹션 11 포맷)</div>
           </div>
         </div>
@@ -556,7 +556,7 @@
       <div class="op-card"><div class="op-id">OP_12 SCOPE</div><div class="op-name">스코프</div><div class="op-desc">대형 작업 전 /scope 필수</div></div>
       <div class="op-card"><div class="op-id">OP_13 LOG</div><div class="op-name">실수 로그</div><div class="op-desc">렌즈 ❌ 반려 발생 시 앤이 즉시 /log 작성 요청</div></div>
       <div class="op-card"><div class="op-id">OP_14 MAT</div><div class="op-name">재료 추적</div><div class="op-desc">재료 변경 발언 감지 시 앤이 즉시 /mat 업데이트</div></div>
-      <div class="op-card new"><div class="op-id new-op">OP_15 TUNNEL ✨NEW</div><div class="op-name">터널 검문</div><div class="op-desc">모든 /handoff 호출 시 터널 검문 필수. ✅ 없이 인계 차단</div></div>
+      <div class="op-card new"><div class="op-id new-op">OP_15 ARC ✨NEW</div><div class="op-name">아크 검문</div><div class="op-desc">모든 /handoff 호출 시 아크 검문 필수. ✅ 없이 인계 차단</div></div>
     </div>
   </section>
 
@@ -689,7 +689,7 @@
       <div class="cmd-card"><div class="cmd-name">/plan [작업명]</div><div class="cmd-desc">코드 작성 전 구조 설계 컨펌 게이트</div></div>
       <div class="cmd-card"><div class="cmd-name">/status</div><div class="cmd-desc">진행 중 프로젝트 현황 대시보드</div></div>
       <div class="cmd-card"><div class="cmd-name">/resume [프로젝트]</div><div class="cmd-desc">이전 작업 맥락 복원</div></div>
-      <div class="cmd-card"><div class="cmd-name">/handoff [A→B]</div><div class="cmd-desc">터널 검문 → 인계 문서 생성</div></div>
+      <div class="cmd-card"><div class="cmd-name">/handoff [A→B]</div><div class="cmd-desc">아크 검문 → 인계 문서 생성</div></div>
       <div class="cmd-card"><div class="cmd-name">/review</div><div class="cmd-desc">결과물 전체 검토 + 렌즈 검수</div></div>
       <div class="cmd-card"><div class="cmd-name">/retro [프로젝트]</div><div class="cmd-desc">완료 회고 + 누적 로그 전체 출력</div></div>
       <div class="cmd-card"><div class="cmd-name">/log [내용]</div><div class="cmd-desc">실수·수정 기록</div></div>
@@ -717,7 +717,7 @@
             <span style="color:var(--muted)">프레이:</span> 노바 · 리라 · 윈터 · 제이나 · 시엘<br>
             <span style="color:var(--muted)">피어:</span> 페이 · 프로즈 · 메모 · 스트라이크 · 드래프트 · 퀼 &nbsp;
             <span style="color:var(--muted)">에이미:</span> 포지 · 렌즈 · 트림 &nbsp;
-            <span style="color:var(--muted)">독립:</span> 터널
+            <span style="color:var(--muted)">독립:</span> 아크
           </div>
         </div>
       </div>
